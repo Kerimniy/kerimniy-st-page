@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta http-equiv="preload">
+    <title>{{ title }}</title>	
+    <meta name="description" content="Status Page - Мониторинг систем">
+    <meta name="robots" content="index, follow"/>
+    <meta name="author" content="Kerimniy">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logos/favicon.ico') }}"> 
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(342deg, rgba(21, 5, 74, 1) 0%, rgba(0, 0, 0, 1) 100%); 
+            color: white; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center; 
+            padding: 20px; 
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 600px; 
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); 
+        }
+        
+        .status-indicator {
+            border-radius: 12px; 
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); 
+            width: 100%;
+            max-width: 400px; 
+            transition: background-color 0.3s ease; 
+        }
+        
+
+        
+        .status-title {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .status-description {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .uptime {
+            font-size: 0.9em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .status-indicator {
+                padding: 20px;
+            }
+            
+            .status-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+
+	
+</head>
+
+<body  onload="setInterval(()=>{ping()},60000)">
+    <div class="header">
+        <h1>Status Page</h1>
+        <p>Мониторинг систем в реальном времени</p> 
+    </div>
+    
+    <div id="div" class="status-indicator" style="{{ rgb }}"> 
+        <div id="stl" class="status-title">{{ stl_text }}</div>
+        <div id="upt" class="status-description">Uptime: {{ all_time }}%</div>
+    </div>
+    
+</body>
+
+<script>
+		const div = document.getElementById("div");
+		const upt = document.getElementById("upt");
+		const stl = document.getElementById("stl");
+		let all_time = 0;
+
+		
+
+		function ping(){
+        fetch("http://localhost:5000/get_st",{
+                method:"GET"
+            })
+                .then(function(response){
+                return response.json();
+            })
+                .then(function(data){
+                all_time = (data["all_time"]);
+				if (data["current_st"]==0){
+					document.title = "Kerimniy Status Page - Всё плохо";
+				}
+				else{
+					document.title = "Kerimniy Status Page - Всё ок";
+				}
+				if (data["current_st"]==0){
+					stl.innerText = "Ничего не работает"
+				}
+				else if (all_time<80 && all_time >45){
+					stl.innerText = "Ну норм"
+				}
+				else if (all_time<=45 && all_time >20){
+					stl.innerText = "Ну плохо"
+				}
+				else if (all_time <20){
+					stl.innerText = "Ужасно, нестабильно"
+				}
+				else if (all_time>=80){
+					stl.innerText = "Ну хорошо"
+				}
+				upt.innerText = `Uptime: ${all_time}%`;
+				valueToRgb(all_time/100);
+            })
+
+		function valueToRgb(x) {
+            if (x < 0 || x > 1) {
+                throw new Error('FormatError');
+            }
+            
+            let r, g, b;
+            if (x <= 0.5) {
+                r = 0.9;
+                g = 1.4 * x;
+                b = 0.0;
+            } else {
+                r = 1.8 * (1 - x);
+                g = 0.7;
+                b = 0.0;
+            }
+            const r255 = Math.round(r * 255);
+            const g255 = Math.round(g * 255);
+            const b255 = Math.round(b * 255);
+            
+            div.style.backgroundColor = `rgb(${r255}, ${g255}, ${b255})`;
+        }
+    }
+	</script>
+
+
+</html>
