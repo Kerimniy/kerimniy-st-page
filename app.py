@@ -1,19 +1,9 @@
 from flask import Flask, request, jsonify, render_template, redirect
 from flask import url_for
-from flask import send_file,send_from_directory, abort, request ,jsonify
-from flask import Response
-from flask_caching import Cache
-from flask import make_response
-import mimetypes
+from flask import send_file,send_from_directory, abort
 from datetime import datetime
-import numpy as np
 import time
-import io
-import os
-import pymysql
-import requests
 import threading  
-import sys
 import subprocess
 
 def ping(host):
@@ -108,14 +98,16 @@ def monitor():
         current_time = current_time.strftime("%H:%M:%S")
         last_check_time = current_time
         c+=1
-        st = ping(r"github.com")
+        st = ping(r"kerimniy.cloudpub.ru")
         all_st+=st
-        time.sleep(60)
+        time.sleep(10)
+
+monitor_thread = threading.Thread(target=monitor, daemon=True)
+monitor_thread.start()
 
 if __name__ == '__main__':
-    monitor_thread = threading.Thread(target=monitor, daemon=True)
-    monitor_thread.start()
-    app.run(debug=False, host='localhost', port=5000)
+   
+    app.run(debug=True, host='localhost', port=5000)
     
 
 

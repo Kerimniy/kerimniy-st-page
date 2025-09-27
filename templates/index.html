@@ -53,8 +53,16 @@
             transition: background-color 0.3s ease; 
         }
         
+        .ping-indicator {
+            border-radius: 12px; 
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); 
+            width: 100%;
+            max-width: 400px; 
+            transition: background-color 0.3s ease; 
+        }
 
-        
         .status-title {
             font-size: 1.8em;
             margin-bottom: 10px;
@@ -91,7 +99,7 @@
 	
 </head>
 
-<body  onload="setInterval(()=>{ping()},60000)">
+<body  onload="setInterval(()=>{ping(); clientPing()},10000)">
     <div class="header">
         <h1>Status Page</h1>
         <p>Мониторинг систем в реальном времени</p> 
@@ -100,7 +108,11 @@
     <div id="div" class="status-indicator" style="{{ rgb }}"> 
         <div id="stl" class="status-title">{{ stl_text }}</div>
         <div id="upt" class="status-description">Uptime: {{ all_time }}%</div>
+        <div id="upt" class="status-description" >Последний чекап: {{ last_check_time }}</div>
     </div>
+
+    <div id="ping" class="ping-indicator" style="position: relative; top:2.5%; {{ rgb }}">Пинг: -1 ms</div>
+    
     
 </body>
 
@@ -108,10 +120,11 @@
 		const div = document.getElementById("div");
 		const upt = document.getElementById("upt");
 		const stl = document.getElementById("stl");
+		const ping_f = document.getElementById("ping");
 		let all_time = 0;
 
-		
-
+		ping();
+        clientPing()
 		function ping(){
         fetch("http://localhost:5000/get_st",{
                 method:"GET"
@@ -168,7 +181,21 @@
             div.style.backgroundColor = `rgb(${r255}, ${g255}, ${b255})`;
         }
     }
-	</script>
+
+        function clientPing(){
+            let ping =-1
+            let start = Date.now();
+
+            try {
+                fetch("https://kerimniy.cloudpub.ru/api/ping");
+            }
+            catch(err) {}
+
+            ping = Date.now() - start
+            
+            ping_f.innerText = `Пинг: ${ping} ms`
+        }
+</script>
 
 
 </html>
